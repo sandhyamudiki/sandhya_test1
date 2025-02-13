@@ -3,29 +3,34 @@ def greet(name):
 
 
 
-def create_member(connection, first_name, last_name, gender:None):
+def create_member(connection, first_name, last_name, email:None):
     cursor = connection.cursor()
     cursor.execute(f"""
-    INSERT INTO members (fname, lname, gender)
-    VALUES (%s, %s, %s);
-    """, (first_name,last_name, gender))
+    INSERT INTO fi_members (first_name, last_name, email)
+    VALUES (%s, %s, %s) RETURNING member_id ;
+    """, (first_name,last_name, email))
     connection.commit()
-    #id = cursor.fetchone()[0]
-    print(f"Record inserted successfully!")
+    id = cursor.fetchone()[0]
+    print(f"Record inserted successfully!: {id}")
+    return id
 
 
-def retrieve_members(connection, member_id=None):
+def retrieve_members(connection, member_id=None, email=None):
     cursor = connection.cursor()
-    if(member_id is None):
-        query = "SELECT * FROM members;"
-    else:
-        query = f"SELECT * FROM members where id = {member_id};"
+    if(member_id is None and email is None):
+        query = "SELECT * FROM fi_members;"
+    elif(email is None):
+        query = f"SELECT * FROM fi_members where id = {member_id};"
         #query = "SELECT * FROM members where id = " + member_id
+    elif(member_id is None):
+        query = f"SELECT * FROM fi_members where email = '{email}';"
     cursor.execute(query)
     rows = cursor.fetchall()
     connection.commit()
     for row in rows:
         print(row)
+        print(row[0])
+    return rows
 
 
 def update_member(connection, member_id, first_name, last_name):
